@@ -42,9 +42,9 @@
     calendar.scrollDirection = FSCalendarScrollDirectionVertical;
 
     calendar.backgroundColor = [UIColor colorWithRed:0.9 green:0.9 blue:0.9 alpha:1];
+	calendar.appearance.todayColor = [UIColor clearColor];
+	calendar.appearance.titleTodayColor = [UIColor lightGrayColor];
 	calendar.appearance.cellShape = FSCalendarCellShapeRectangle;
-	calendar.today = nil;
-	calendar.currentPage = [NSDate date];
 	calendar.appearance.borderDefaultColor = [UIColor whiteColor];
 	calendar.appearance.weekdayTextColor = [UIColor lightGrayColor];
 	calendar.appearance.titleDefaultColor = [UIColor lightGrayColor];
