@@ -48,6 +48,9 @@
 	calendar.appearance.borderDefaultColor = [UIColor whiteColor];
 	calendar.appearance.weekdayTextColor = [UIColor lightGrayColor];
 	calendar.appearance.titleDefaultColor = [UIColor lightGrayColor];
+	calendar.appearance.titleSelectionColor = [UIColor lightGrayColor];
+	calendar.appearance.selectionColor = [UIColor clearColor];
+	calendar.appearance.caseOptions = FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
 	calendar.headerHeight = 0;
 
     [view addSubview:calendar];
