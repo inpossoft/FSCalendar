@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 @interface FSCalendar (DataSourceAndDelegate)
 
 - (NSInteger)numberOfEventsForDate:(NSDate *)date;
+- (NSString *)monthNameForDate:(NSDate *)date;
 - (NSString *)subtitleForDate:(NSDate *)date;
 - (UIImage *)imageForDate:(NSDate *)date;
 - (NSDate *)minimumDateForCalendar;
@@ -1517,6 +1518,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     cell.date = [self dateForIndexPath:indexPath];
     cell.image = [self imageForDate:cell.date];
     cell.numberOfEvents = [self numberOfEventsForDate:cell.date];
+	cell.monthName = [self monthNameForDate:cell.date];
     cell.subtitle  = [self subtitleForDate:cell.date];
     cell.dateIsSelected = [_selectedDates containsObject:cell.date];
     cell.dateIsToday = [self date:cell.date sharesSameDayWithDate:_today];
@@ -1787,6 +1789,14 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 }
 
 #pragma mark - DataSource
+
+- (NSString *)monthNameForDate:(NSDate *)date
+{
+	if (_dataSource && [_dataSource respondsToSelector:@selector(calendar:monthNameForDate:)]) {
+		return [_dataSource calendar:self monthNameForDate:date];
+	}
+	return _ibEditing && _appearance.fakeSubtitles ? @"test" : nil;
+}
 
 - (NSString *)subtitleForDate:(NSDate *)date
 {

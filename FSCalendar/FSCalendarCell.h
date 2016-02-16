@@ -16,6 +16,7 @@
 @property (weak, nonatomic) FSCalendarAppearance *appearance;
 
 @property (weak, nonatomic) UILabel  *titleLabel;
+@property (weak, nonatomic) UILabel  *monthNameLabel;
 @property (weak, nonatomic) UILabel  *subtitleLabel;
 @property (weak, nonatomic) UIImageView *imageView;
 
@@ -23,6 +24,7 @@
 @property (weak, nonatomic) FSCalendarEventIndicator *eventIndicator;
 
 @property (strong, nonatomic) NSDate   *date;
+@property (strong, nonatomic) NSString *monthName;
 @property (strong, nonatomic) NSString *subtitle;
 @property (strong, nonatomic) UIImage  *image;
 
@@ -38,6 +40,8 @@
 @property (strong, nonatomic) UIColor *preferedSelectionColor;
 @property (strong, nonatomic) UIColor *preferedTitleDefaultColor;
 @property (strong, nonatomic) UIColor *preferedTitleSelectionColor;
+@property (strong, nonatomic) UIColor *preferedMonthNameDefaultColor;
+@property (strong, nonatomic) UIColor *preferedMonthNameSelectionColor;
 @property (strong, nonatomic) UIColor *preferedSubtitleDefaultColor;
 @property (strong, nonatomic) UIColor *preferedSubtitleSelectionColor;
 @property (strong, nonatomic) UIColor *preferedEventColor;

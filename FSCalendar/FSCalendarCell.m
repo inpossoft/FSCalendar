@@ -38,6 +38,12 @@
         UIImageView *imageView;
         FSCalendarEventIndicator *eventView;
         
+		label = [[UILabel alloc] initWithFrame:CGRectZero];
+		label.textAlignment = NSTextAlignmentCenter;
+		label.textColor = [UIColor lightGrayColor];
+		[self.contentView addSubview:label];
+		self.monthNameLabel = label;
+
         label = [[UILabel alloc] initWithFrame:CGRectZero];
         label.textAlignment = NSTextAlignmentCenter;
         label.textColor = [UIColor blackColor];
@@ -127,6 +133,16 @@
 
 - (void)configureCell
 {
+	if (_monthName) {
+		_monthNameLabel.text = _monthName;
+		if (_monthNameLabel.hidden) {
+			_monthNameLabel.hidden = NO;
+		}
+	} else {
+		if (!_monthNameLabel.hidden) {
+			_monthNameLabel.hidden = YES;
+		}
+	}
     _titleLabel.text = [NSString stringWithFormat:@"%@",@([_calendar dayOfDate:_date])];
     if (_subtitle) {
         _subtitleLabel.text = _subtitle;
@@ -140,8 +156,22 @@
     }
     if (_needsAdjustingViewFrame || CGSizeEqualToSize(_titleLabel.frame.size, CGSizeZero)) {
         _needsAdjustingViewFrame = NO;
-        
-        if (_subtitle) {
+
+		if (_monthName) {
+			CGFloat titleHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:_titleLabel.font}].height;
+			CGFloat monthNameHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:_monthNameLabel.font}].height;
+
+			CGFloat height = titleHeight + monthNameHeight;
+			_monthNameLabel.frame = CGRectMake(0,
+											   (self.contentView.fs_height-height)*0.5+_appearance.titleVerticalOffset,
+											   self.fs_width,
+											   monthNameHeight);
+			_titleLabel.frame = CGRectMake(0,
+											  _monthNameLabel.fs_bottom - (_monthNameLabel.fs_height-_monthNameLabel.font.pointSize)+_appearance.subtitleVerticalOffset,
+											  self.fs_width,
+											  titleHeight);
+
+		} else if (_subtitle) {
             CGFloat titleHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:_titleLabel.font}].height;
             CGFloat subtitleHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:_subtitleLabel.font}].height;
 
@@ -171,7 +201,13 @@
             _subtitleLabel.textColor = textColor;
         }
     }
-    
+	if (_monthName) {
+		textColor = self.colorForTitleLabel;
+		if (![textColor isEqual:_titleLabel.textColor]) {
+			_monthNameLabel.textColor = textColor;
+		}
+	}
+
     UIColor *borderColor = self.colorForCellBorder;
     BOOL shouldHiddenBackgroundLayer = !self.selected && !self.dateIsToday && !self.dateIsSelected && !borderColor;
     
@@ -238,6 +274,11 @@
 - (void)invalidateTitleFont
 {
     _titleLabel.font = self.appearance.preferredTitleFont;
+}
+
+- (void)invalidateMonthNameFont
+{
+	_monthNameLabel.font = self.appearance.preferredTitleFont;
 }
 
 - (void)invalidateTitleTextColor
@@ -331,11 +372,23 @@
     if (![_appearance isEqual:calendar.appearance]) {
         _appearance = calendar.appearance;
         [self invalidateTitleFont];
+		[self invalidateMonthNameFont];
         [self invalidateSubtitleFont];
         [self invalidateTitleTextColor];
         [self invalidateSubtitleTextColor];
         [self invalidateEventColors];
     }
+}
+
+- (void)setMonthName:(NSString *)monthName
+{
+	if (![_monthName isEqualToString:monthName]) {
+		_needsAdjustingViewFrame = !(_monthName.length && monthName.length);
+		_monthName = monthName;
+		if (_needsAdjustingViewFrame) {
+			[self setNeedsLayout];
+		}
+	}
 }
 
 - (void)setSubtitle:(NSString *)subtitle

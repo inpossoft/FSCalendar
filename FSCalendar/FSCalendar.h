@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarScrollDirection) {
 @protocol FSCalendarDataSource <FSCalendarDataSourceDeprecatedProtocol>
 
 @optional
+- (NSString *)calendar:(FSCalendar *)calendar monthNameForDate:(NSDate *)date;
 - (NSString *)calendar:(FSCalendar *)calendar subtitleForDate:(NSDate *)date;
 - (UIImage *)calendar:(FSCalendar *)calendar imageForDate:(NSDate *)date;
 - (NSDate *)minimumDateForCalendar:(FSCalendar *)calendar;

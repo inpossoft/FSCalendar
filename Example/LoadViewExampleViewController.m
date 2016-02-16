@@ -49,6 +49,9 @@
 	calendar.appearance.weekdayTextColor = [UIColor lightGrayColor];
 	calendar.appearance.titleDefaultColor = [UIColor lightGrayColor];
 	calendar.appearance.titleSelectionColor = [UIColor lightGrayColor];
+	calendar.appearance.subtitleDefaultColor = [UIColor lightGrayColor];
+	calendar.appearance.subtitleSelectionColor = [UIColor lightGrayColor];
+	calendar.appearance.subtitleTodayColor = [UIColor lightGrayColor];
 	calendar.appearance.selectionColor = [UIColor clearColor];
 	calendar.appearance.caseOptions = FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
 	calendar.headerHeight = 0;
@@ -76,6 +79,18 @@
      */
     
     
+}
+
+- (NSString *)calendar:(FSCalendar *)calendar monthNameForDate:(NSDate *)date {
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	[dateFormatter setDateFormat:@"MMM"];
+	NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:date];
+	NSInteger dayOfWeek = [[[NSCalendar currentCalendar] components:NSWeekdayCalendarUnit fromDate:date] weekday];
+	// Check if is first day of month or it's first day on calendar
+	if (components.day == 1 || ([date compare:[NSDate date]] == NSOrderedAscending && dayOfWeek == 1)) {
+		return [dateFormatter stringFromDate:date].uppercaseString;
+	}
+	return nil;
 }
 
 - (BOOL)calendar:(FSCalendar *)calendar shouldSelectDate:(NSDate *)date
