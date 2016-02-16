@@ -688,7 +688,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 		int rowToSwipe = ((*targetContentOffset).y)/(rowHeight);
 		if (_rowToSwipe < rowToSwipe) {
 			_rowToSwipe++;
-		} else if (_rowToSwipe >= rowToSwipe) {
+		} else if (_rowToSwipe > rowToSwipe) {
 			_rowToSwipe--;
 		}
 		if (_rowToSwipe < 0) {
