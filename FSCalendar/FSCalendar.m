@@ -507,7 +507,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     FSCalendarCell *cell = (FSCalendarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-    if (cell.dateIsPlaceholder) {
+    if (cell.dateIsPlaceholder && !_isWeeklyPaging) {
         if ([self isDateInRange:cell.date]) {
             [self selectDate:cell.date scrollToDate:YES forPlaceholder:YES];
         } else if (![self date:cell.date sharesSameMonthWithDate:_currentPage]){
@@ -1316,7 +1316,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
 - (NSDate *)dateForIndexPath:(NSIndexPath *)indexPath
 {
-    if (self.collectionViewLayout.transition == FSCalendarTransitionWeekToMonth && self.collectionViewLayout.state == FSCalendarTransitionStateInProgress) {
+    if (self.collectionViewLayout.transition == FSCalendarTransitionWeekToMonth && self.collectionViewLayout.state == FSCalendarTransitionStateInProgress && _isWeeklyPaging) {
         return [self dateForIndexPath:indexPath scope:FSCalendarScopeMonth];
     }
     return [self dateForIndexPath:indexPath scope:_scope];
