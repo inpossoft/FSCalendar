@@ -53,6 +53,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     NSMutableArray *_selectedDates;
     NSDate *_minimumDate;
     NSDate *_maximumDate;
+	NSInteger _rowToSwipe;
 }
 @property (strong, nonatomic) NSMutableArray             *weekdays;
 @property (strong, nonatomic) NSMapTable                 *stickyHeaderMapTable;
@@ -441,6 +442,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     if (!self.floatingMode) {
         switch (_scope) {
             case FSCalendarScopeMonth: {
+				if (_isWeeklyPaging) {
+					return 7;
+				}
                 return 42;
             }
             case FSCalendarScopeWeek: {
@@ -576,6 +580,10 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     }
 }
 
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
+	return UIEdgeInsetsMake(0.8, 0, 0, 0);
+}
+
 #pragma mark - <UIScrollViewDelegate>
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -635,42 +643,59 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     if (!_pagingEnabled || !_scrollEnabled) {
         return;
     }
-    CGFloat pannedOffset = 0, targetOffset = 0, currentOffset = 0, contentSize = 0;
-    switch (_collectionViewLayout.scrollDirection) {
-        case UICollectionViewScrollDirectionHorizontal: {
-            pannedOffset = [scrollView.panGestureRecognizer translationInView:scrollView].x;
-            targetOffset = targetContentOffset->x;
-            currentOffset = scrollView.contentOffset.x;
-            contentSize = scrollView.fs_width;
-            break;
-        }
-        case UICollectionViewScrollDirectionVertical: {
-            pannedOffset = [scrollView.panGestureRecognizer translationInView:scrollView].y;
-            targetOffset = targetContentOffset->y;
-            currentOffset = scrollView.contentOffset.y;
-            contentSize = scrollView.fs_height;
-            break;
-        }
-    }
-    BOOL shouldTriggerPageChange = ((pannedOffset < 0 && targetOffset > currentOffset) ||
-                                     (pannedOffset > 0 && targetOffset < currentOffset)) && _minimumDate;
-    if (shouldTriggerPageChange) {
-        [self willChangeValueForKey:@"currentPage"];
-        switch (_scope) {
-            case FSCalendarScopeMonth: {
-                NSDate *minimumPage = [self beginingOfMonthOfDate:_minimumDate];
-                _currentPage = [self dateByAddingMonths:targetOffset/contentSize toDate:minimumPage];
-                break;
-            }
-            case FSCalendarScopeWeek: {
-                NSDate *minimumPage = [self beginingOfWeekOfDate:_minimumDate];
-                _currentPage = [self dateByAddingWeeks:targetOffset/contentSize toDate:minimumPage];
-                break;
-            }
-        }
-        [self currentPageDidChange];
-        [self didChangeValueForKey:@"currentPage"];
-    }
+	if (!_isWeeklyPaging) {
+		CGFloat pannedOffset = 0, targetOffset = 0, currentOffset = 0, contentSize = 0;
+		switch (_collectionViewLayout.scrollDirection) {
+			case UICollectionViewScrollDirectionHorizontal: {
+				pannedOffset = [scrollView.panGestureRecognizer translationInView:scrollView].x;
+				targetOffset = targetContentOffset->x;
+				currentOffset = scrollView.contentOffset.x;
+				contentSize = scrollView.fs_width;
+				break;
+			}
+			case UICollectionViewScrollDirectionVertical: {
+				*targetContentOffset = CGPointMake(0, 0);
+				pannedOffset = [scrollView.panGestureRecognizer translationInView:scrollView].y;
+				targetOffset = targetContentOffset->y;
+				currentOffset = scrollView.contentOffset.y;
+				contentSize = scrollView.fs_height;
+				break;
+			}
+		}
+		BOOL shouldTriggerPageChange = ((pannedOffset < 0 && targetOffset > currentOffset) ||
+										(pannedOffset > 0 && targetOffset < currentOffset)) && _minimumDate;
+		if (shouldTriggerPageChange) {
+			[self willChangeValueForKey:@"currentPage"];
+			switch (_scope) {
+				case FSCalendarScopeMonth: {
+					NSDate *minimumPage = [self beginingOfMonthOfDate:_minimumDate];
+					_currentPage = [self dateByAddingMonths:targetOffset/contentSize toDate:minimumPage];
+					break;
+				}
+				case FSCalendarScopeWeek: {
+					NSDate *minimumPage = [self beginingOfWeekOfDate:_minimumDate];
+					_currentPage = [self dateByAddingWeeks:targetOffset/contentSize toDate:minimumPage];
+					break;
+				}
+			}
+			[self currentPageDidChange];
+			[self didChangeValueForKey:@"currentPage"];
+		}
+	} else {
+		*targetContentOffset = scrollView.contentOffset; // set acceleration to 0.0
+		float rowHeight = (float)self.collectionView.bounds.size.height / 6;
+
+		int rowToSwipe = ((*targetContentOffset).y)/(rowHeight);
+		if (_rowToSwipe < rowToSwipe) {
+			_rowToSwipe++;
+		} else if (_rowToSwipe >= rowToSwipe) {
+			_rowToSwipe--;
+		}
+		if (_rowToSwipe < 0) {
+			_rowToSwipe = 0;
+		}
+		[self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:_rowToSwipe] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
+	}
 }
 
 #pragma mark - Notification
@@ -1258,22 +1283,27 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 {
     switch (scope) {
         case FSCalendarScopeMonth: {
-            NSDate *currentPage = [self dateByAddingMonths:indexPath.section toDate:[self beginingOfMonthOfDate:_minimumDate]];
-            NSInteger currentWeekday = [self weekdayOfDate:currentPage];
-            NSInteger numberOfPlaceholdersForPrev = ((currentWeekday- _firstWeekday) + 7) % 7 ?: (7 * !self.floatingMode);
-            NSDate *firstDateOfPage = [self dateBySubstractingDays:numberOfPlaceholdersForPrev fromDate:currentPage];
-            switch (_collectionViewLayout.scrollDirection) {
-                case UICollectionViewScrollDirectionHorizontal: {
-                    NSUInteger rows = indexPath.item % 6;
-                    NSUInteger columns = indexPath.item / 6;
-                    NSUInteger daysOffset = 7*rows + columns;
-                    return [self dateByAddingDays:daysOffset toDate:firstDateOfPage];
-                }
-                case UICollectionViewScrollDirectionVertical: {
-                    NSUInteger daysOffset = indexPath.item;
-                    return [self dateByAddingDays:daysOffset toDate:firstDateOfPage];
-                }
-            }
+			if (_isWeeklyPaging) {
+				NSDate *currentPage = [self dateByAddingWeeks:indexPath.section toDate:[self beginingOfWeekOfDate:_minimumDate]];
+				return [self dateByAddingDays:indexPath.item toDate:currentPage];
+			} else {
+				NSDate *currentPage = [self dateByAddingMonths:indexPath.section toDate:[self beginingOfMonthOfDate:_minimumDate]];
+				NSInteger currentWeekday = [self weekdayOfDate:currentPage];
+				NSInteger numberOfPlaceholdersForPrev = ((currentWeekday- _firstWeekday) + 7) % 7 ?: (7 * !self.floatingMode);
+				NSDate *firstDateOfPage = [self dateBySubstractingDays:numberOfPlaceholdersForPrev fromDate:currentPage];
+				switch (_collectionViewLayout.scrollDirection) {
+					case UICollectionViewScrollDirectionHorizontal: {
+						NSUInteger rows = indexPath.item % 6;
+						NSUInteger columns = indexPath.item / 6;
+						NSUInteger daysOffset = 7*rows + columns;
+						return [self dateByAddingDays:daysOffset toDate:firstDateOfPage];
+					}
+					case UICollectionViewScrollDirectionVertical: {
+						NSUInteger daysOffset = indexPath.item;
+						return [self dateByAddingDays:daysOffset toDate:firstDateOfPage];
+					}
+				}
+			}
             break;
         }
         case FSCalendarScopeWeek: {
@@ -1492,14 +1522,20 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     cell.dateIsToday = [self date:cell.date sharesSameDayWithDate:_today];
     switch (_scope) {
         case FSCalendarScopeMonth: {
-            NSDate *firstPage = [self beginingOfMonthOfDate:_minimumDate];
-            NSDate *month = [self dateByAddingMonths:indexPath.section toDate:firstPage];
-            cell.dateIsPlaceholder = ![self date:cell.date sharesSameMonthWithDate:month] || ![self isDateInRange:cell.date];
-            if (cell.dateIsPlaceholder) {
-                cell.dateIsSelected &= _pagingEnabled;
-                cell.dateIsToday &= _pagingEnabled;
-            }
-            break;
+			if (_isWeeklyPaging) {
+				NSDate *firstPage = [self beginingOfMonthOfDate:_minimumDate];
+				NSDate *month = [self dateByAddingMonths:indexPath.section toDate:firstPage];
+				cell.dateIsPlaceholder = ![self date:cell.date sharesSameMonthWithDate:month] || ![self isDateInRange:cell.date];
+				if (cell.dateIsPlaceholder) {
+					cell.dateIsSelected &= _pagingEnabled;
+					cell.dateIsToday &= _pagingEnabled;
+				}
+			} else {
+				if (_pagingEnabled) {
+					cell.dateIsPlaceholder = ![self isDateInRange:cell.date];
+				}
+			}
+			break;
         }
         case FSCalendarScopeWeek: {
             if (_pagingEnabled) {

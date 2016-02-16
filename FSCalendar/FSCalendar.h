@@ -79,6 +79,7 @@ IB_DESIGNABLE
 @property (strong, nonatomic) NSDate *currentPage;
 @property (strong, nonatomic) NSLocale *locale;
 @property (strong, nonatomic) NSString *identifier;
+@property (assign, nonatomic) BOOL isWeeklyPaging;
 @property (assign, nonatomic) FSCalendarScrollDirection scrollDirection;
 @property (assign, nonatomic) FSCalendarScope scope;
 @property (assign, nonatomic) IBInspectable NSUInteger firstWeekday;

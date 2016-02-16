@@ -52,6 +52,7 @@
 	calendar.appearance.selectionColor = [UIColor clearColor];
 	calendar.appearance.caseOptions = FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
 	calendar.headerHeight = 0;
+	calendar.isWeeklyPaging = YES;
 
     [view addSubview:calendar];
     self.calendar = calendar;
