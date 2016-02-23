@@ -115,20 +115,6 @@
     calendar.frame = CGRectMake(0, CGRectGetMaxY(self.navigationController.navigationBar.frame), self.view.bounds.size.width, height);
 }
 
-- (NSDate *)minimumDateForCalendar:(FSCalendar *)calendar
-{
-	NSDateComponents *comps = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay fromDate:[NSDate date]];
-	[comps setYear:[comps year] - 3];
-	return [[NSCalendar currentCalendar] dateFromComponents:comps];
-}
-
-- (NSDate *)maximumDateForCalendar:(FSCalendar *)calendar
-{
-	NSDateComponents *comps = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay fromDate:[NSDate date]];
-	[comps setYear:[comps year] + 3];
-	return [[NSCalendar currentCalendar] dateFromComponents:comps];
-}
-
 - (UIImage *)calendar:(FSCalendar *)calendar imageForDate:(NSDate *)date
 {
     return self.images[[calendar stringFromDate:date format:@"yyyy/MM/dd"]];

@@ -689,7 +689,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 		*targetContentOffset = scrollView.contentOffset; // set acceleration to 0.0
 		float rowHeight = (float)self.collectionView.bounds.size.height / 6;
 
-		int rowToSwipe = ((*targetContentOffset).y)/(rowHeight);
+		int rowToSwipe = ((*targetContentOffset).y + rowHeight * 2.5)/(rowHeight);
 		if (_rowToSwipe < rowToSwipe) {
 			_rowToSwipe++;
 		} else if (_rowToSwipe > rowToSwipe) {
