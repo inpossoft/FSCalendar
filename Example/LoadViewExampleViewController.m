@@ -66,8 +66,7 @@
     [super viewDidLoad];
     
     
-    [self.calendar selectDate:[self.calendar tomorrowOfDate:[NSDate date]]];
-     
+	[self.calendar setCurrentPage:[self.calendar tomorrowOfDate:[NSDate date]]];
     
     /*
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -86,8 +85,9 @@
 	[dateFormatter setDateFormat:@"MMM"];
 	NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:date];
 	NSInteger dayOfWeek = [[[NSCalendar currentCalendar] components:NSWeekdayCalendarUnit fromDate:date] weekday];
+	NSTimeInterval secondsBetween = [[NSDate date] timeIntervalSinceDate:date];
 	// Check if is first day of month or it's first day on calendar
-	if (components.day == 1 || ([date compare:[NSDate date]] == NSOrderedAscending && dayOfWeek == 1)) {
+	if (components.day == 1 || ([date compare:[NSDate date]] == NSOrderedAscending && dayOfWeek == 1 && secondsBetween < 604800)) {
 		return [dateFormatter stringFromDate:date].uppercaseString;
 	}
 	return nil;
@@ -117,15 +117,17 @@
 
 - (NSDate *)minimumDateForCalendar:(FSCalendar *)calendar
 {
-    return [calendar tomorrowOfDate:[NSDate date]];
+	NSDateComponents *comps = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay fromDate:[NSDate date]];
+	[comps setYear:[comps year] - 3];
+	return [[NSCalendar currentCalendar] dateFromComponents:comps];
 }
 
-/*
 - (NSDate *)maximumDateForCalendar:(FSCalendar *)calendar
 {
-    return [_calendar dateWithYear:2026 month:12 day:31];
+	NSDateComponents *comps = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay fromDate:[NSDate date]];
+	[comps setYear:[comps year] + 3];
+	return [[NSCalendar currentCalendar] dateFromComponents:comps];
 }
- */
 
 - (UIImage *)calendar:(FSCalendar *)calendar imageForDate:(NSDate *)date
 {

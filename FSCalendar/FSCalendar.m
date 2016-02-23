@@ -429,6 +429,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     }
     switch (_scope) {
         case FSCalendarScopeMonth:
+			if (_isWeeklyPaging) {
+				return [self weeksFromDate:[self beginingOfWeekOfDate:_minimumDate] toDate:_maximumDate] + 1;
+			}
             return [self monthsFromDate:[self beginingOfMonthOfDate:_minimumDate] toDate:_maximumDate] + 1;
         case FSCalendarScopeWeek:
             return [self weeksFromDate:[self beginingOfWeekOfDate:_minimumDate] toDate:_maximumDate] + 1;
@@ -782,7 +785,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         _today = [self dateByIgnoringTimeComponentsOfDate:today];
         switch (_scope) {
             case FSCalendarScopeMonth: {
-                _currentPage = [self beginingOfMonthOfDate:today];
+				if (_isWeeklyPaging) {
+					_currentPage = [self beginingOfWeekOfDate:today];
+				} else {
+					_currentPage = [self beginingOfMonthOfDate:today];
+				}
                 break;
             }
             case FSCalendarScopeWeek: {
@@ -1204,7 +1211,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     NSInteger scrollOffset = 0;
     switch (_scope) {
         case FSCalendarScopeMonth: {
-            scrollOffset = [self monthsFromDate:[self beginingOfMonthOfDate:_minimumDate] toDate:targetDate];
+			if (_isWeeklyPaging) {
+				scrollOffset = [self weeksFromDate:[self beginingOfWeekOfDate:_minimumDate] toDate:targetDate];
+				_rowToSwipe = scrollOffset;
+				scrollOffset = [self monthsFromDate:[self beginingOfMonthOfDate:_minimumDate] toDate:targetDate];
+			}
             break;
         }
         case FSCalendarScopeWeek: {
@@ -1217,7 +1228,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         
         switch (_collectionViewLayout.scrollDirection) {
             case UICollectionViewScrollDirectionVertical: {
-                [_collectionView setContentOffset:CGPointMake(0, scrollOffset * _collectionView.fs_height) animated:animated];
+				if (_isWeeklyPaging) {
+					[self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:_rowToSwipe] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
+				} else {
+					[_collectionView setContentOffset:CGPointMake(0, scrollOffset * _collectionView.fs_height) animated:animated];
+				}
                 break;
             }
             case UICollectionViewScrollDirectionHorizontal: {
@@ -1258,7 +1273,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                 [self willChangeValueForKey:@"currentPage"];
                 switch (_scope) {
                     case FSCalendarScopeMonth: {
-                        _currentPage = [self beginingOfMonthOfDate:date];
+						if (_isWeeklyPaging) {
+							_currentPage = [self beginingOfWeekOfDate:date];
+						} else {
+							_currentPage = [self beginingOfMonthOfDate:date];
+						}
                         break;
                     }
                     case FSCalendarScopeWeek: {
@@ -1382,6 +1401,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     }
     switch (_scope) {
         case FSCalendarScopeMonth:
+			if (_isWeeklyPaging) {
+				return ![self date:date sharesSameWeekWithDate:_currentPage];
+			}
             return ![self date:date sharesSameMonthWithDate:_currentPage];
         case FSCalendarScopeWeek:
             return ![self date:date sharesSameWeekWithDate:_currentPage];
