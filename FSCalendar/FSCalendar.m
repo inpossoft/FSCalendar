@@ -55,6 +55,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     NSDate *_minimumDate;
     NSDate *_maximumDate;
 	NSInteger _rowToSwipe;
+	NSInteger _lastContentOffset;
 }
 @property (strong, nonatomic) NSMutableArray             *weekdays;
 @property (strong, nonatomic) NSMapTable                 *stickyHeaderMapTable;
@@ -642,6 +643,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     }
 }
 
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+	_lastContentOffset = scrollView.contentOffset.y;
+}
+
+
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
 {
     if (!_pagingEnabled || !_scrollEnabled) {
@@ -687,12 +693,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 		}
 	} else {
 		*targetContentOffset = scrollView.contentOffset; // set acceleration to 0.0
-		float rowHeight = (float)self.collectionView.bounds.size.height / 6;
+		float halfRowHeight = (float)self.collectionView.bounds.size.height / 12;
 
-		int rowToSwipe = ((*targetContentOffset).y + rowHeight * 2.5)/(rowHeight);
-		if (_rowToSwipe < rowToSwipe) {
+		if ((*targetContentOffset).y - halfRowHeight > _lastContentOffset) {
 			_rowToSwipe++;
-		} else if (_rowToSwipe > rowToSwipe) {
+		} else if ((*targetContentOffset).y + halfRowHeight < _lastContentOffset) {
 			_rowToSwipe--;
 		}
 		if (_rowToSwipe < 0) {
@@ -1230,7 +1235,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         switch (_collectionViewLayout.scrollDirection) {
             case UICollectionViewScrollDirectionVertical: {
 				if (_isWeeklyPaging) {
-					[self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:_rowToSwipe] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
+					[self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:_rowToSwipe] atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
 				} else {
 					[_collectionView setContentOffset:CGPointMake(0, scrollOffset * _collectionView.fs_height) animated:animated];
 				}

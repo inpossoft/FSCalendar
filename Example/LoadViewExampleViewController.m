@@ -35,7 +35,7 @@
     self.view = view;
     
     // 450 for iPad and 300 for iPhone
-    CGFloat height = [[UIDevice currentDevice].model hasPrefix:@"iPad"] ? 450 : 300;
+    CGFloat height = [[UIDevice currentDevice].model hasPrefix:@"iPad"] ? 450 : 150;
     FSCalendar *calendar = [[FSCalendar alloc] initWithFrame:CGRectMake(0, 64, view.frame.size.width, height)];
     calendar.dataSource = self;
     calendar.delegate = self;
