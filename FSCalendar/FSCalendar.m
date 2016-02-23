@@ -1214,6 +1214,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 			if (_isWeeklyPaging) {
 				scrollOffset = [self weeksFromDate:[self beginingOfWeekOfDate:_minimumDate] toDate:targetDate];
 				_rowToSwipe = scrollOffset;
+			} else {
 				scrollOffset = [self monthsFromDate:[self beginingOfMonthOfDate:_minimumDate] toDate:targetDate];
 			}
             break;
